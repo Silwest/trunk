@@ -1,0 +1,16 @@
+{% extends "home.html" %}
+{% block title %}Settings {{ user_profile.first }}{% endblock %}
+{% block content %}
+<table class="cool-table" style="margin: 0 auto;">
+    <form method="post" action=".">
+        {{ formset.as_table }}
+        <tfoot>
+            <tr>
+                <td colspan="2">
+                    <input type="submit" style='text-align: center;' class="btn"/>
+                </td>
+            </tr>
+        </tfoot>
+    </form>
+</table>
+{% endblock %}

@@ -73,13 +73,13 @@
                             Logged as: {{ user }} <b class="caret"></b>
                         </a>
                         <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                            <li><a tabindex="-1" href="./index.html">Settings</a></li>
+                            <li><a tabindex="-1" href="{%  url "app.views.settings" %}">Settings</a></li>
                             {% if user.is_authenticated %}
                                 {%  if user.is_staff %}
-                                    <li><a tabindex="-1" href="theme/united/index.html">Admin</a></li>
+                                    <li><a tabindex="-1" href="/admin/">Admin</a></li>
                                 {%  endif %}
                             {%  endif %}
-                            <li><a tabindex="-1" href="theme/base/index.html">Logout</a></li>
+                            <li><a tabindex="-1" href="{%  url "app.views.logout_user" %}">Logout</a></li>
                         </ul>
                     </li>
 
