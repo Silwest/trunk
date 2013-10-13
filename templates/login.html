@@ -1,0 +1,40 @@
+{%  extends "home.html" %}
+{%  block content %}
+<table class="cool-table" style="margin: 0 auto; text-align: center;">
+    <form method="post" action="{%  url "app.views.login_user" %}">
+        {%  csrf_token %}
+        <thead>
+            <tr>
+                <th colspan="2">
+                    Login
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>User Name</td>
+                <td>
+                    <input type="text" id="username" name="username" placeholder="Username"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Password
+                </td>
+                <td>
+                    <input type="password"  id="password" name="password" placeholder="Password"/>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2" style="text-align: right;">
+                    <button type="submit" class="btn">
+                        Submit
+                    </button>
+                </td>
+            </tr>
+        </tfoot>
+    </form>
+</table>
+{%  endblock %}
