@@ -4,7 +4,9 @@ from django.db.models.signals import post_save
 
 
 class UserProfile(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, help_text='Database user')
+    userCard = models.IntegerField(max_length=20, unique=True, blank=True, null=True,
+                                   help_text="Numer karty identyfikacyjnej.")
 
     class Meta:
         def __init__(self):

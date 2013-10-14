@@ -1,4 +1,5 @@
 from atom.http_core import HttpResponse
+from django.contrib import messages
 from django.contrib.auth import logout, authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
@@ -30,10 +31,10 @@ def login_user(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(username=username, password=password)
-        print user is None
         if user is not None:
             if user.is_active:
                 login(request, user)
+                messages.add_message(request, messages.SUCCESS, 'Logged in.')
                 return HttpResponseRedirect('/')
     return render_to_response('login.html', add_csrf(request,
                                                      ), context_instance=RequestContext(request))
@@ -41,6 +42,7 @@ def login_user(request):
 
 def logout_user(request):
     logout(request)
+    messages.add_message(request, messages.INFO, 'Logged out.')
     return redirect_to_login(next='')
 
 
@@ -54,6 +56,10 @@ def main(request):
 def settings(request):
     user_profile = UserProfile.objects.filter(user=request.user)
     user_profile_form = modelformset_factory(UserProfile, extra=0)
+    if request.method == 'POST':
+        formset = user_profile_form(request.POST)
+        if formset.is_valid:
+            formset.save()
     formset = user_profile_form(queryset=user_profile)
 
     return render_to_response('settings.html',add_csrf(request,

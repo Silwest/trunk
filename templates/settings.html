@@ -3,6 +3,7 @@
 {% block content %}
 <table class="cool-table" style="margin: 0 auto;">
     <form method="post" action=".">
+        {% csrf_token %}
         {{ formset.as_table }}
         <tfoot>
             <tr>
