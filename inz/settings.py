@@ -1,5 +1,5 @@
 # Django settings for inz project.
-from django.conf.global_settings import LOGIN_URL
+from django.conf.global_settings import LOGIN_URL, LOGIN_REDIRECT_URL
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -134,20 +134,50 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
 LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+########################################################################
+# LDAP Authentication
+########################################################################
+import ldap
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+
+#AUTH_LDAP_START_TLS = True
+AUTH_LDAP_GLOBAL_OPTIONS = {
+    ldap.OPT_X_TLS_REQUIRE_CERT: False,
+    ldap.OPT_REFERRALS: False,
+}
+
+AUTH_LDAP_SERVER_URI = "ldaps://127.0.0.1:1636/o=fis"
+AUTH_LDAP_BIND_DN = ''
+#AUTH_LDAP_BIND_DN = 'cn=0Tomasze,ou=2010, o=fis'
+AUTH_LDAP_BIND_PASSWORD = ''
+#AUTH_LDAP_BIND_PASSWORD = 'tyskie3'
+AUTH_LDAP_USER_SEARCH = LDAPSearch("o=fis", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+
+AUTH_LDAP_ALWAYS_UPDATE_USER = False
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail"
+}
+
+AUTHENTICATION_BACKENDS = (
+    'django_auth_ldap.backend.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+#=====================================
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
-            'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'stream_to_console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
+        },
     },
     'loggers': {
         'django.request': {
@@ -155,5 +185,34 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'django_auth_ldap': {
+            'handlers': ['stream_to_console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     }
 }
+
+#LOGGING = {
+#    'version': 1,
+#    'disable_existing_loggers': False,
+#    'filters': {
+#        'require_debug_false': {
+#            '()': 'django.utils.log.RequireDebugFalse'
+#        }
+#    },
+#    'handlers': {
+#        'mail_admins': {
+#            'level': 'ERROR',
+#            'filters': ['require_debug_false'],
+#            'class': 'django.utils.log.AdminEmailHandler'
+#        }
+#    },
+#    'loggers': {
+#        'django.request': {
+#            'handlers': ['mail_admins'],
+#            'level': 'ERROR',
+#            'propagate': True,
+#        },
+#    }
+#}
