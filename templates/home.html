@@ -49,6 +49,7 @@
             .menu();
     });
 </script>
+{% block script %}{% endblock %}
 </head>
 <body>
 <div class="navbar navbar-fixed-top">
@@ -120,7 +121,7 @@
     $(document).ready(function(){
         {% if messages %}
             {% for message in messages %}
-                noty_message('{{ message }}', '{{ message.tags }}', 'top');
+                noty_message('{{ message }}', '{{ message.tags }}', 'topRight');
             {% endfor %}
         {% endif %}
     })

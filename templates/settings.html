@@ -1,10 +1,26 @@
 {% extends "home.html" %}
 {% block title %}Settings {{ user_profile.first }}{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).ready(function(){
+            $('#id_form-0-userCard').prop('disabled', true);
+        });
+    </script>
+{% endblock %}
 {% block content %}
 <table class="cool-table" style="margin: 0 auto;">
     <form method="post" action=".">
         {% csrf_token %}
-        {{ formset.as_table }}
+        <tr>
+            <th>User</th>
+            <td>{{ user_profile.user }} - {{ user_profile.user.first_name }} {{ user_profile.user.last_name }}</td>
+        </tr>
+        <tr>
+            <th>User Card</th>
+            <td>{{ user_profile.userCard }}</td>
+        </tr>
+{#        {{ formset.as_table }}#}
         <tfoot>
             <tr>
                 <td colspan="2">

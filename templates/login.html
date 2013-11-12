@@ -1,7 +1,7 @@
 {%  extends "home.html" %}
 {%  block content %}
 <table class="cool-table" style="margin: 0 auto; text-align: center;">
-    <form method="post" action="{%  url "app.views.login_user" %}">
+    <form method="post" action="{% url "django.contrib.auth.views.login" %}">
         {%  csrf_token %}
         <thead>
             <tr>
