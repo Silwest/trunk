@@ -13,6 +13,7 @@ urlpatterns = patterns('',
     url(r'^logout/$', "app.views.logout_user", name='logout_user'),
     url(r'^settings/$', "app.views.settings", name='settings'),
     url(r'^sendEmail/$', "app.views.sendEmail", name='sendEmail'),
+    url(r'^jsonRPC/$', "app.views.jsonRPC", name='sendEmail'),
     #url(r'^login/$', 'auth.views.login_user', name='login'),
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

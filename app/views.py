@@ -4,12 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.views import redirect_to_login
 from django.core.context_processors import csrf
+from django.core.mail import EmailMultiAlternatives
 from django.forms.models import modelformset_factory
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
+import pyjsonrpc
 from app.models import UserProfile
-from django.core.mail import EmailMultiAlternatives
 
 def add_csrf(request, **kwargs):
     """ Add CSRF and user to dictionary.
@@ -19,16 +20,31 @@ def add_csrf(request, **kwargs):
     return d
 
 
-def sendEmail(request):
+def sendEmail(request, subject, to, content):
     """
         Funkcja wysylajaca maile do uzytkownikow.
     """
-    subject, from_email, to = 'hello', 'silwestpol@gmail.com', 'silwestpol@gmail.com'
+    subject, from_email, to = 'hello', 'silwestpl@gmail.com', 'silwestpol@gmail.com'
     text_content = 'This is important'
     html_content = '<p>cos</p>'
     msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
     msg.attach_alternative(html_content, 'text/html')
     msg.send()
+
+
+@login_required()
+def jsonRPC(request):
+    http_client = pyjsonrpc.HttpClient(
+        url="http://localhost:8080",
+        username='Silwest',
+        password='test'
+    )
+    user = User.objects.get(id=2)
+    print user
+    print http_client.call("add", 1, 2)
+    print http_client.add(1, 4)
+    print http_client.userInfo(user.first_name, user.last_name)
+
 
 @login_required()
 def home(request):

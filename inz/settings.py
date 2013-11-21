@@ -193,6 +193,14 @@ LOGGING = {
     }
 }
 
+#### EMAIL
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'silwestpl@gmail.com'
+EMAIL_HOST_PASSWORD = 'kochamcie'
+EMAIL_PORT = 587
+
+from django.core.mail import send_mail
 #LOGGING = {
 #    'version': 1,
 #    'disable_existing_loggers': False,
