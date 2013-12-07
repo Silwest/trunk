@@ -10,6 +10,7 @@ class UserCard(models.Model):
     cardNumber = models.IntegerField(max_length=9, unique=True, blank=False, null=False)
     created = models.DateField(blank=True, null=True)
     validTo = models.DateField(blank=True, null=True)
+    can_login = models.BooleanField(default=True, blank=False, null=False)
 
 
     class Meta:

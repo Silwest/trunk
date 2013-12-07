@@ -1,14 +1,16 @@
+import json
+from datetime import datetime, timedelta
 from django.contrib import messages
 from django.contrib.auth import logout, authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.contrib.auth.views import redirect_to_login
 from django.core.context_processors import csrf
 from django.core.mail import EmailMultiAlternatives
 from django.forms.models import modelformset_factory
-from django.http.response import HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template.context import RequestContext
+from django.http.response import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render_to_response, redirect
+from django.template.context import RequestContext, Context
+from django.template.loader import get_template
 import pyjsonrpc
 from app.models import UserProfile
 
@@ -20,16 +22,45 @@ def add_csrf(request, **kwargs):
     return d
 
 
-def sendEmail(request, subject, to, content):
+def check_creation_date():
+    """
+        Sprawdza czy uzytkownik moze jeszcze korzystac z serwisu.
+    """
+    users = UserProfile.objects.filter(userCard__validTo__lt=datetime.today())# userzy do wyrzucenia
+    for user in users:
+        user.userCard.can_login = False
+        user.userCard.save()
+
+
+def updateValidTo(request):
+    """
+        Sprawdza czy uzytkownik moze jeszcze korzystac z serwisu.
+    """
+    user = UserProfile.objects.get(user=request.user)
+    user.userCard.can_login = True
+    user.userCard.validTo += timedelta(days=30)
+    user.userCard.save()
+    messages.add_message(request, messages.SUCCESS, 'Twoje konto zostalo przedluzone.')
+    return redirect(home)
+
+
+def sendEmail(request):
     """
         Funkcja wysylajaca maile do uzytkownikow.
     """
-    subject, from_email, to = 'hello', 'silwestpl@gmail.com', 'silwestpol@gmail.com'
-    text_content = 'This is important'
-    html_content = '<p>cos</p>'
-    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
-    msg.attach_alternative(html_content, 'text/html')
+    userProfiles = UserProfile.objects.filter(userCard__can_login=False)
+    subject = 'Twoje konto jest nieaktywne!'
+    from_email = 'silwestpl@gmail.com'
+    template = get_template('email_template.html')
+    template_html = template.render(Context({}))
+    to = []
+    for user in userProfiles:
+        to.append(user.user.email)
+    msg = EmailMultiAlternatives(subject, '', from_email, to)
+    msg.attach_alternative(template_html, "text/html")
     msg.send()
+    messages.add_message(request, messages.SUCCESS, 'Mail zostal wyslany do nie aktywnych uzytkownikow!')
+    return redirect(home)
 
 
 @login_required()
@@ -39,17 +70,87 @@ def jsonRPC(request):
         username='Silwest',
         password='test'
     )
-    user = User.objects.get(id=2)
-    print user
+    #user = User.objects.get(id=4)
+    #p#rint user
     print http_client.call("add", 1, 2)
+    dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.date) else None
     print http_client.add(1, 4)
-    print http_client.userInfo(user.first_name, user.last_name)
+    today = datetime.today()
+    add_days = timedelta(days=30)
+    http_client.addDays(json.dumps(datetime.today(), default=dthandler))
+    #print http_client.userInfo(user.first_name, user.last_name)@login_required()
+
+
+def jsonCheckIfCanOpen(request, user_id):
+    http_client = pyjsonrpc.HttpClient(
+        url="http://localhost:8080",
+        username='Silwest',
+        password='test'
+    )
+    return HttpResponse(http_client.check(user_id))
+
+def jsonOpenDoor(request, user_id):
+    http_client = pyjsonrpc.HttpClient(
+        url="http://localhost:8080",
+        username='Silwest',
+        password='test'
+    )
+
+    response = http_client.openDoor(user_id)
+    if response:
+        messages.add_message(request, messages.SUCCESS, 'Drzwi zostaly zamkniete.')
+    else:
+        messages.add_message(request, messages.WARNING, 'Blad przy otwieraniu drzwi dla usera.')
+    return redirect(home)
+
+
+
+def jsonCloseDoor(request, user_id):
+    http_client = pyjsonrpc.HttpClient(
+        url="http://localhost:8080",
+        username='Silwest',
+        password='test'
+    )
+
+    response = http_client.closeDoor(user_id)
+    if response:
+        messages.add_message(request, messages.SUCCESS, 'Drzwi zostaly otworzone.')
+    else:
+        messages.add_message(request, messages.WARNING, 'Blad przy otwieraniu drzwi dla usera.')
+    return redirect(home)
+    #with open('doors.txt', 'r') as file:
+    #    data = file.readlines()
+    #for (counter, line) in enumerate(data):
+    #    if line[0] == user_id:
+    #        data[counter] = str(user_id + ' 1\n')
+    #with open('doors.txt', 'w') as file:
+    #    file.writelines(data)
+
+
+
+
+
+    #
+    ##user = User.objects.get(id=4)
+    ##p#rint user
+    #print http_client.call("add", 1, 2)
+    #dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.date) else None
+    #print http_client.add(1, 4)
+    #today = datetime.today()
+    #add_days = timedelta(days=30)
+    #http_client.addDays(json.dumps(datetime.today(), default=dthandler))
+    ##print http_client.userInfo(user.first_name, user.last_name)
 
 
 @login_required()
 def home(request):
-    print request.user
-    return render_to_response('home.html', add_csrf(request), context_instance=RequestContext(request))
+    users = UserProfile.objects.all()
+    check_creation_date()
+    logged_user = UserProfile.objects.get(user=request.user)
+    return render_to_response('home.html', add_csrf(request,
+                                                    users=users,
+                                                    logged_user=logged_user,
+                                            ), context_instance=RequestContext(request))
 
 
 def login_user(request):
@@ -92,3 +193,18 @@ def settings(request):
                                                        user_profile=user_profile[0],
                                                        formset=formset,
                                                        ), context_instance=RequestContext(request))
+
+#
+#@login_required()
+#def search_user_in_ldap(request, search=None):
+#    ldap_obj = LDAPBackend()
+#    #user = ldap_obj.populate_user('0tomasze')
+#    search_filter = "(|(sn=*"+ search + " *)(displayName=*" + search + "*))"
+#    search_scope = ldap.SCOPE_SUBTREE
+#    retrive_attributes = ["displayName", "mail"]
+#    try:
+#        ldap_result_id = ldap_obj.search('', search_scope, search_filter, retrive_attributes)
+#        while 1:
+#            _, user = l.result
+#    #LDAPSearch("o=fis", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+#    print user.is_anonymous()

@@ -23,6 +23,7 @@
 {%  endcache %}
 <script>
     $(document).ready(function(){
+        $('.button').button();
         $( "#dropdown-toggle" )
             .button()
             .next()
@@ -48,6 +49,22 @@
             .hide()
             .menu();
     });
+    function checkIfCanOpen(userId){
+        $.get('jsonCheckIfCanOpen/' + userId + '/', function(data){
+            if(data == 1)//moze otworzyc
+            {
+                $('#check_' + userId).replaceWith('<p>Tak</p>');
+                var url = '/jsonCloseDoor/'+ userId;
+                $('#openDoor_' + userId).append('<a class="btn btn-danger" href="' + url + '">Close</a>');
+            }
+            else{
+                $('#check_' + userId).replaceWith('<p>Nie</p>');
+                var url = '/jsonOpenDoor/'+ userId;
+                $('#openDoor_' + userId).append('<a class="btn btn-warning" href="' + url + '">Open</a>');
+            }
+        })
+
+    }
 </script>
 {% block script %}{% endblock %}
 </head>
@@ -64,10 +81,10 @@
             <div class="nav-collapse collapse">
                 <ul class="nav">
                     <li class="active">
-                        <a href="./index.html">Home</a>
+                        <a href="">Home</a>
                     </li>
                     <li>
-                        <a>Contact</a>
+                        <a href="mailto:silwestpol@gmail.com">Contact</a>
                     </li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -89,11 +106,72 @@
         </div>
     </div>
 </div>
+
 <div id="content" style="margin-top: 45px;">
-    {%  block content %}{%  endblock %}
+    {%  block content %}
+        {% if request.user.is_superuser %}
+            <div id="users" style="margin: 0 auto;">
+                <table class="cool-table" style="margin: 0 auto;">
+                    <thead>
+                        <th>UserName</th>
+                        <th>User Card #</th>
+                        <th>Valid to</th>
+                        <th>Moze otworzyc drzwi do serwerowni?</th>
+                        <th>Pozwol na otworzenie drzwi</th>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr {% if user.userCard.can_login == False %}class="ui-state-error"{% endif %}>
+                                <td>{{ user }}</td>
+                                <td>{{ user.userCard }}</td>
+                                <td>{{ user.userCard.validTo }}</td>
+                                <td><a id='check_{{ user.user.id }}' onclick="checkIfCanOpen({{ user.user.id }})" class="btn btn-primary">Sprawdz</a></td>
+                                <td id="openDoor_{{ user.user.id }}"></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5">
+                                <a class="button" href="/sendEmail/">Send email to unactive users</a>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% else %}
+            <div id="users" style="margin: 0 auto;">
+                <table class="cool-table" style="margin: 0 auto;">
+                    <thead>
+                        <th>UserName</th>
+                        <th>Valid to</th>
+                        <th>Moze otworzyc drzwi do serwerowni?</th>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            {% if user.user == request.user %}
+                                <tr {% if user.userCard.can_login == False %}class="ui-state-error"{% endif %}>
+                                    <td>{{ user }}</td>
+                                    <td>{{ user.userCard.validTo }}</td>
+                                    <td></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2">
+                                <a class="button" href="/updateValidTo/">Przedluz swoje konto o kolejny miesiac</a>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% endif %}
+    {%  endblock %}
 </div>
 {%  cache 604800 styles_and_scripts_homejs %}
-<!-- Placed at the end of the document so the pages load faster -->
+    <!-- Placed at the end of the document so the pages load faster -->
 <script src="{% static  "js/bootstrap.min.js" %}" type="text/javascript"></script>
 <script src="{% static "js/jquery-ui-1.10.0.custom.min.js" %}" type="text/javascript"></script>
 <script src="{% static  "js/prettify.js" %}" type="text/javascript"></script>
