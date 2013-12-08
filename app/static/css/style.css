@@ -90,7 +90,7 @@ table.cool-table{
 .cool-table tr.ui-state-error td{
     padding:10px;
     text-align:center;
-    background-color: #aad2f3;
+    background-color: #f3b59b;
     border: 2px solid #E7EFE0;
     -moz-border-radius:2px;
     -webkit-border-radius:2px;

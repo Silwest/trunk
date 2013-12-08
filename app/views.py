@@ -87,7 +87,14 @@ def jsonCheckIfCanOpen(request, user_id):
         username='Silwest',
         password='test'
     )
-    return HttpResponse(http_client.check(user_id))
+    userProfile = UserProfile.objects.get(user_id=user_id)
+    response = http_client.check(user_id)
+    if response:
+        messages.add_message(request, messages.SUCCESS, str(userProfile) + ' moze otworzyc drzwi do serwerowni.')
+    else:
+        messages.add_message(request, messages.WARNING, str(userProfile) + ' nie moze otworzyc drzwi do serwerowni.')
+
+    return HttpResponse(response)
 
 def jsonOpenDoor(request, user_id):
     http_client = pyjsonrpc.HttpClient(
@@ -97,12 +104,12 @@ def jsonOpenDoor(request, user_id):
     )
 
     response = http_client.openDoor(user_id)
+    userProfile = UserProfile.objects.get(user_id=user_id)
     if response:
-        messages.add_message(request, messages.SUCCESS, 'Drzwi zostaly zamkniete.')
+        messages.add_message(request, messages.SUCCESS, 'Drzwi zostaly zamkniete dla' + str(userProfile))
     else:
         messages.add_message(request, messages.WARNING, 'Blad przy otwieraniu drzwi dla usera.')
     return redirect(home)
-
 
 
 def jsonCloseDoor(request, user_id):
@@ -113,8 +120,9 @@ def jsonCloseDoor(request, user_id):
     )
 
     response = http_client.closeDoor(user_id)
+    userProfile = UserProfile.objects.get(user_id=user_id)
     if response:
-        messages.add_message(request, messages.SUCCESS, 'Drzwi zostaly otworzone.')
+        messages.add_message(request, messages.SUCCESS, 'Drzwi zostaly otworzone dla' + str(userProfile))
     else:
         messages.add_message(request, messages.WARNING, 'Blad przy otwieraniu drzwi dla usera.')
     return redirect(home)

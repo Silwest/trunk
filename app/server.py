@@ -34,29 +34,10 @@ def closeDoor(user_id):
         file.writelines(data)
     return 1
 
-
-def userInfo(userName, userLastName):
-    response = "Hello " + userName + ' ' +userLastName + ", how are you?";
-    return response
-
-def addDays(first_date, plus_days):
-    print 'im here'
-    print first_date
-    print plus_days
-    return 'IM here'
-
-def checkIfCanOpen(user_id):
-    file = open('doors.txt', 'rw')
-
-    response = "Hello , how are you?";
-    return response
 class RequestHandler(pyjsonrpc.HttpRequestHandler):
 
     # Register public JSON-RPC methods
     methods = {
-        "add": add,
-        "userInfo": userInfo,
-        "checkIfCanOpen": checkIfCanOpen,
         "check": check,
         "openDoor": openDoor,
         "closeDoor": closeDoor,
